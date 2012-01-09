@@ -1,7 +1,7 @@
 # ====================================================================
 # Created by:    Sean Anderson, sean@seananderson.ca
 # Created:       Jul 07, 2011
-# Last modified: Dec 05, 2011
+# Last modified: Jan 09, 2012
 # Purpose:       combine paleo and iucn rates/risk and plot them for
 # fig 2 of the review paper
 # ====================================================================
@@ -109,17 +109,19 @@ pal[3] <- "#000000"
 
 bg.plot <- function(colour = "#00000010") rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = colour, border = FALSE)
 
+# remove ones with no IUCN or paleo:
+dat.scaled <- subset(dat.scaled, !label %in% c("Polypodiopsida", "Merostomata"))
 
-pdf("iucn-paleo-rates-bar.pdf", width = 4.5, height = 4.4)
+pdf("iucn-paleo-rates-bar-jan9.pdf", width = 4.15, height = 3.7)
 par(mfrow = c(1, 2))
 par(mar = c(0,0,0,0))
 par(cex = 0.7)
 par(mgp = c(2, 0.4, 0)) # title and axis label distances - make them closer
-par(oma = c(3.6, 9, 2, 4))
+par(oma = c(2.6, 9, 2, 4))
 par(tck = -0.012) # shorten the tick length
 
 ## the fossil panel:
-plot(1, 1, xlim = log(c(0.004, max(dat.scaled$ext.0.75, na.rm = TRUE)* 1.71)), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
+plot(1, 1, xlim = log(c(0.004, max(dat.scaled$ext.0.75, na.rm = TRUE)* 1.94)), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
 bg.plot(colour = "grey97")
 box(bty = "o", col = "grey70")
 par(xpd = FALSE)
@@ -130,18 +132,23 @@ axis(2, col = "grey70", at = 1:nrow(dat.scaled), labels = paste(dat.scaled$label
 
 par(las = 0)
 par(xpd = NA)
-axis.pos <- c(0.005, 0.02, 0.1, 0.5)
-axis(1, col = "grey70", at = log(axis.pos), labels = axis.pos, col.axis = "grey35", cex.axis = 1)
+axis.pos <- c(0.004, 0.02, 0.1, 0.5)
+axis(1, col = "grey70", at = log(c(0.004, axis.pos)), labels = c(0, axis.pos), col.axis = "grey35", cex.axis = 1)
+# fake the addition of a 0 on the x-axis
 
 with(dat.scaled, segments(log(ext.0.25 + 0.004), 1:nrow(dat.scaled), log(ext.0.75), 1:nrow(dat.scaled), col = "black"))
 with(dat.scaled, points(log(median.ext+ 0.004), 1:nrow(dat.scaled), pch = 19, col = "grey30"))
 
 par(xpd = NA)
-mtext("Median extinction rate\n(fossil)", side = 1, line =2.5, cex = 0.7, col = "grey30")
+mtext("Median extinction rate", side = 1, line =1.6, cex = 0.7, col = "grey30")
 
 par(las = 2)
-axis(2, at = nrow(dat.scaled) + 1, label = "Taxon", lwd = 0, col.axis = "grey30")
+axis(2, at = nrow(dat.scaled) + 1.15, label = "Taxon", lwd = 0, col.axis = "grey30")
 par(las = 0)
+
+# labels at top:
+par(xpd = NA)
+mtext("(a) Fossil", side = 3, line = 0, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## the iucn panel:
 plot(1, 1, xlim = c(0, 0.5), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
@@ -149,60 +156,72 @@ bg.plot(colour = "grey97")
 par(xpd = FALSE)
 abline(h = 1:nrow(dat.scaled), col = "grey90")
 par(xpd = NA)
-col.end <- paste("#FF0000", round(dat.scaled$n.prop, 2)* 100 - 1, sep = "")
-col.vul <- as.character(paste("#D0BD00", round(dat.scaled$n.prop, 2)* 100 - 1, sep = ""))
+#col.end <- paste("#FF0000", round(dat.scaled$n.prop, 2)* 100 - 1, sep = "")
+#col.vul <- as.character(paste("#D0BD00", round(dat.scaled$n.prop, 2)* 100 - 1, sep = ""))
+#col.end <- "#FF0000"
+#col.vul <- "#D0BD00"
+col <- brewer.pal(6, "Set1")
+col.end <- col[1]
+col.vul <- col[5]
+col.end <- "#E73123"
+col.vul <- "#E7C823"
 box(bty = "o", col = "grey70")
 par(xpd = FALSE)
 par(xpd = NA)
-axis(1, col = "grey70", at = seq(0, 0.5, 0.1), labels = c(0, 0.1, 0.2, 0.3, 0.4, 0.5), col.axis = "grey35")
+axis(1, col = "grey70", at = seq(0, 0.5, 0.2), labels = seq(0, 0.5, 0.2), col.axis = "grey35")
 
 
 #bar.cols <- brewer.pal(3, "Set1")
 par(xpd = FALSE)
-with(dat.scaled, rect(rep(0, nrow(dat.scaled)), 1:nrow(dat.scaled)- 0.3, extinct, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = "#00000090"))
+with(dat.scaled, rect(rep(0, nrow(dat.scaled)), 1:nrow(dat.scaled)- 0.3, extinct, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = "#5E5E5E"))
 
 # duplicated for darkness: endangered
-with(dat.scaled, rect(extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = col.end))
+#with(dat.scaled, rect(extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = col.end))
 with(dat.scaled, rect(extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = col.end))
 
 # duplicated for darkness: vulnerable
-with(dat.scaled, rect(endangered + extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered + vulnerable, 1:nrow(dat.scaled) + 0.3, border = FALSE, col =col.vul))
+#with(dat.scaled, rect(endangered + extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered + vulnerable, 1:nrow(dat.scaled) + 0.3, border = FALSE, col =col.vul))
 with(dat.scaled, rect(endangered + extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered + vulnerable, 1:nrow(dat.scaled) + 0.3, border = FALSE, col =col.vul))
 
 
 par(xpd = NA)
 par(las = 0)
-mtext("Fraction of species\n(modern)", side = 1, line =2.5, cex = 0.7, col = "grey30")
+mtext("Fraction of species", side = 1, line =1.6, cex = 0.7, col = "grey30")
 
 ## iucn numbers on the right
 par(las = 1)
 axis(4, col = "grey70", at = 1:nrow(dat.scaled), labels = paste(dat.scaled$n, dat.scaled$dd.high, sep = ""), col.axis = "grey45")
 axis(4, at = nrow(dat.scaled) + 1.4, label = "Species\nassessed", lwd = 0, col.axis = "grey30")
 
+# labels at top:
+par(xpd = NA)
+mtext("(b) Modern", side = 3, line = 0, cex = 0.7, adj = 0.05, col = "grey30")
+
+
 ## colour legend:
-cols.df <- data.frame(value = seq(25, 100, 5), col = c(paste("#FF0000", seq(25, 95, 5), sep = ""), "#FF000099"));cols.df$col <- as.character(cols.df$col)
-cols.df.vul <- data.frame(value = seq(25, 100, 5), col = c(paste("#D0BD00", seq(25, 95, 5), sep = ""), "#D0BD0099"));cols.df.vul$col <- as.character(cols.df.vul$col)
-leg.pos <- 0.25
-rect(leg.pos - 0.018, 0.6, leg.pos + 0.24, 5.5,  border= "grey75", col = "grey95")
+#cols.df <- data.frame(value = seq(25, 100, 5), col = c(paste("#FF0000", seq(25, 95, 5), sep = ""), "#FF000099"));cols.df$col <- as.character(cols.df$col)
+#cols.df.vul <- data.frame(value = seq(25, 100, 5), col = c(paste("#D0BD00", seq(25, 95, 5), sep = ""), "#D0BD0099"));cols.df.vul$col <- as.character(cols.df.vul$col)
+#leg.pos <- 0.25
+#rect(leg.pos - 0.018, 0.6, leg.pos + 0.24, 5.5,  border= "grey75", col = "grey95")
 
-cols.df$rect.left <- seq(1, 4, length.out = nrow(cols.df)+ 1)[1:(nrow(cols.df) )] 
-cols.df$rect.right <- seq(1, 4, length.out = nrow(cols.df) + 1)[2:(nrow(cols.df) + 1)] 
+#cols.df$rect.left <- seq(1, 4, length.out = nrow(cols.df)+ 1)[1:(nrow(cols.df) )] 
+#cols.df$rect.right <- seq(1, 4, length.out = nrow(cols.df) + 1)[2:(nrow(cols.df) + 1)] 
 
-cols.df.vul$rect.left <- seq(1, 4, length.out = nrow(cols.df.vul)+ 1)[1:(nrow(cols.df.vul) )]
-cols.df.vul$rect.right <- seq(1, 4, length.out = nrow(cols.df.vul) + 1)[2:(nrow(cols.df.vul) + 1)] 
+#cols.df.vul$rect.left <- seq(1, 4, length.out = nrow(cols.df.vul)+ 1)[1:(nrow(cols.df.vul) )]
+#cols.df.vul$rect.right <- seq(1, 4, length.out = nrow(cols.df.vul) + 1)[2:(nrow(cols.df.vul) + 1)] 
 
 # duplicated to match darkness
-for(i in 1:nrow(cols.df)) with(cols.df, rect(leg.pos, rect.left[i], leg.pos + 0.02, rect.right[i], col = col[i], border = NA))
-for(i in 1:nrow(cols.df)) with(cols.df.vul, rect(leg.pos + 0.02, rect.left[i], leg.pos + 0.02 + 0.02, rect.right[i], col = col[i], border = NA))
+#for(i in 1:nrow(cols.df)) with(cols.df, rect(leg.pos, rect.left[i], leg.pos + 0.02, rect.right[i], col = col[i], border = NA))
+#for(i in 1:nrow(cols.df)) with(cols.df.vul, rect(leg.pos + 0.02, rect.left[i], leg.pos + 0.02 + 0.02, rect.right[i], col = col[i], border = NA))
 
-for(i in 1:nrow(cols.df)) with(cols.df, rect(leg.pos, rect.left[i], leg.pos + 0.02, rect.right[i], col = col[i], border = NA))
-for(i in 1:nrow(cols.df)) with(cols.df.vul, rect(leg.pos + 0.02, rect.left[i], leg.pos + 0.02 + 0.02, rect.right[i], col = col[i], border = NA))
+#for(i in 1:nrow(cols.df)) with(cols.df, rect(leg.pos, rect.left[i], leg.pos + 0.02, rect.right[i], col = col[i], border = NA))
+#for(i in 1:nrow(cols.df)) with(cols.df.vul, rect(leg.pos + 0.02, rect.left[i], leg.pos + 0.02 + 0.02, rect.right[i], col = col[i], border = NA))
 
-segments(leg.pos + 0.06, 1, leg.pos + 0.06, 4, col = "grey35")
-segments(leg.pos + 0.06, 4, leg.pos + 0.07, 4, col = "grey35")
-segments(leg.pos + 0.06, 1, leg.pos + 0.07, 1, col = "grey35")
-text(leg.pos + 0.07, 1, "25%", pos = 4, col = "grey45")
-text(leg.pos + 0.07, 4, "100%", pos = 4, col = "grey45")
-text(leg.pos - 0.03, 4.9, "% assessed", pos = 4, col = "grey45")
+#segments(leg.pos + 0.06, 1, leg.pos + 0.06, 4, col = "grey35")
+#segments(leg.pos + 0.06, 4, leg.pos + 0.07, 4, col = "grey35")
+#segments(leg.pos + 0.06, 1, leg.pos + 0.07, 1, col = "grey35")
+#text(leg.pos + 0.07, 1, "25%", pos = 4, col = "grey45")
+#text(leg.pos + 0.07, 4, "100%", pos = 4, col = "grey45")
+#text(leg.pos - 0.03, 4.9, "% assessed", pos = 4, col = "grey45")
 
 dev.off()
