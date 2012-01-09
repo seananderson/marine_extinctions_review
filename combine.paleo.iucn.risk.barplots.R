@@ -188,7 +188,7 @@ mtext("(b) Modern", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## legend:
 leg.element <- function(x = 0.15, y , label, col) {
-  rect(x, y-0.2, x +  0.025, y + 0.2, col = col, border = NA)
+  rect(x, y-0.12, x +  0.025, y + 0.28, col = col, border = NA)
   text(x + 0.03, y, label, pos = 4, col = "grey35", cex = 0.8)
 }
 
