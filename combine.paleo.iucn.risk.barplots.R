@@ -50,7 +50,8 @@ iucn.summary[iucn.summary$label == "Aves", "endangered"] <- aves.summary[aves.su
 iucn.summary[iucn.summary$label == "Aves", "extinct"] <- aves.summary[aves.summary$IUCNCat == "EX", "freq"]
 iucn.summary[iucn.summary$label == "Aves", "vulnerable"] <- aves.summary[aves.summary$IUCNCat == "VU", "freq"]
 
-iucn.summary[iucn.summary$label == "Aves", "n"] <- sum(aves.summary$freq)
+iucn.summary[iucn.summary$label == "Aves", "n"] <- sum(subset(aves.summary, IUCNCat != "DD")$freq)
+iucn.summary[iucn.summary$label == "Aves", "n.with.DD"] <- sum(aves.summary$freq)
 
 ##### end seabirds
 
@@ -63,7 +64,7 @@ dat[is.na(dat$n), "n"] <- 0
 
 dat <- dat[order(dat$n), ]
 
-dat.scaled <- transform(dat, endangered = endangered/n, dd = dd/n, extinct = extinct/n, vulnerable = vulnerable/n, endangered.plus.vulnerable = endangered / n + vulnerable / n, endangered.plus.extinct = endangered / n + extinct / n)
+dat.scaled <- transform(dat, endangered = endangered/n, dd = dd/n, extinct = extinct/n, vulnerable = vulnerable/n, endangered.plus.vulnerable = endangered / n + vulnerable / n, endangered.plus.extinct = endangered / n + extinct / n, end.plus.ext.l = endangered/n.with.DD + extinct/n.with.DD, end.plus.ext.u = (endangered + dd)/n.with.DD + extinct/n.with.DD)
 
 dat.scaled <- rbind(dat.scaled[nrow(dat.scaled):(nrow(dat.scaled)-1), ], dat.scaled[-((nrow(dat.scaled):(nrow(dat.scaled)-1))), ])
 
@@ -173,6 +174,9 @@ with(dat.scaled, rect(rep(0, nrow(dat.scaled)), 1:nrow(dat.scaled)- 0.3, extinct
 with(dat.scaled, rect(extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = col.end))
 
 with(dat.scaled, rect(endangered + extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered + vulnerable, 1:nrow(dat.scaled) + 0.3, border = FALSE, col =col.vul))
+
+# add confidence intervals with and without DD
+with(dat.scaled, segments(end.plus.ext.l, 1:nrow(dat.scaled), end.plus.ext.u, 1:nrow(dat.scaled)))
 
 par(xpd = NA)
 par(las = 0)
