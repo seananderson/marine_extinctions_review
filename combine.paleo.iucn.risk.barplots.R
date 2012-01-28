@@ -1,7 +1,7 @@
 # ====================================================================
 # Created by:    Sean Anderson, sean@seananderson.ca
 # Created:       Jul 07, 2011
-# Last modified: Jan 09, 2012
+# Last modified: Jan 28, 2012
 # Purpose:       combine paleo and iucn rates/risk and plot them for
 # fig 2 of the review paper
 # ====================================================================
@@ -30,12 +30,13 @@ iucn.dat2 <- merge(out, status.names)
 
 library(plyr)
 iucn.summary <- ddply(iucn.dat2, "label", function(x) {
-                      data.frame(
+data.frame(
       extinct = nrow(subset(x, red.list.status %in% c("EX", "EW"))),
       endangered = nrow(subset(x, red.list.status %in% c("CR", "EN"))),
       vulnerable = nrow(subset(x, red.list.status %in% c("VU"))),
       dd = nrow(subset(x, red.list.status %in% c("DD"))),
-      n = nrow(x)
+      n.with.DD = nrow(x),
+      n = nrow(subset(x, red.list.status != "DD"))
 )})
 
 #### begin substitute sea bird data:
@@ -110,7 +111,7 @@ bg.plot <- function(colour = "#00000010") rect(par("usr")[1], par("usr")[3], par
 # remove ones with no IUCN or paleo:
 dat.scaled <- subset(dat.scaled, !label %in% c("Polypodiopsida", "Merostomata"))
 
-pdf("iucn-paleo-rates-bar-jan9.pdf", width = 4.15, height = 3.7)
+pdf("iucn-paleo-rates-bar-jan28-DD.pdf", width = 4.15, height = 3.7)
 par(mfrow = c(1, 2))
 par(mar = c(0,0,0,0))
 par(cex = 0.7)
@@ -149,7 +150,7 @@ par(xpd = NA)
 mtext("(a) Fossil", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## the iucn panel:
-plot(1, 1, xlim = c(0, 0.5), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
+plot(1, 1, xlim = c(0, 1.0), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
 bg.plot(colour = "grey97")
 par(xpd = FALSE)
 abline(h = 1:nrow(dat.scaled), col = "grey90")
@@ -164,7 +165,7 @@ col.vul <- "#E7C823"
 box(bty = "o", col = "grey70")
 par(xpd = FALSE)
 par(xpd = NA)
-axis(1, col = "grey70", at = seq(0, 0.5, 0.2), labels = seq(0, 0.5, 0.2), col.axis = "grey45")
+axis(1, col = "grey70", at = seq(0, 1.0, 0.25), labels = seq(0, 1.0, 0.25), col.axis = "grey45")
 
 par(xpd = FALSE)
 with(dat.scaled, rect(rep(0, nrow(dat.scaled)), 1:nrow(dat.scaled)- 0.3, extinct, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = "#5E5E5E"))
