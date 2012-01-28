@@ -112,6 +112,14 @@ bg.plot <- function(colour = "#00000010") rect(par("usr")[1], par("usr")[3], par
 # remove ones with no IUCN or paleo:
 dat.scaled <- subset(dat.scaled, !label %in% c("Polypodiopsida", "Merostomata"))
 
+row.names(dat.scaled) <- NULL
+### HARDCODED ORDERING OF THE ECHINODERM AND BIVALVE ROWS!!!!!!!
+biv.temp <- dat.scaled[3, ]
+echin.temp <- dat.scaled[4, ]
+dat.scaled[4, ] <- biv.temp
+dat.scaled[3, ] <- echin.temp
+
+
 pdf("iucn-paleo-rates-bar-jan28-DD.pdf", width = 4.15, height = 3.7)
 par(mfrow = c(1, 2))
 par(mar = c(0,0,0,0))
@@ -120,6 +128,7 @@ par(mgp = c(2, 0.40, 0)) # title and axis label distances - make them closer
 par(oma = c(2.6, 9, 2, 4))
 par(tck = -0.02) # shorten the tick length
 
+dat.scaled$y.pos <- 1:nrow(dat.scaled)
 ## the fossil panel:
 plot(1, 1, xlim = log(c(0.004, max(dat.scaled$ext.0.75, na.rm = TRUE)* 1.94)), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
 bg.plot(colour = "grey97")
@@ -176,7 +185,10 @@ with(dat.scaled, rect(extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered, 1:
 with(dat.scaled, rect(endangered + extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered + vulnerable, 1:nrow(dat.scaled) + 0.3, border = FALSE, col =col.vul))
 
 # add confidence intervals with and without DD
-with(dat.scaled, segments(end.plus.ext.l, 1:nrow(dat.scaled), end.plus.ext.u, 1:nrow(dat.scaled)))
+with(dat.scaled, segments(end.plus.ext.l, 1:nrow(dat.scaled), end.plus.ext.u, 1:nrow(dat.scaled), col = "grey25"))
+par(xpd = NA)
+with(dat.scaled, points(endangered + extinct, 1:nrow(dat.scaled), col = "grey25", pch = 20, cex = 0.6))
+par(xpd = FALSE)
 
 par(xpd = NA)
 par(las = 0)
@@ -192,12 +204,12 @@ par(xpd = NA)
 mtext("(b) Modern", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## legend:
-leg.element <- function(x = 0.15, y , label, col) {
-  rect(x, y-0.12, x +  0.025, y + 0.28, col = col, border = NA)
+leg.element <- function(x = 0.35, y , label, col) {
+  rect(x, y-0.12, x +  0.055, y + 0.28, col = col, border = NA)
   text(x + 0.03, y, label, pos = 4, col = "grey35", cex = 0.8)
 }
 
-rect(0.1, 0.25, 0.5, 2.65,  border= "grey75", col = "grey95")
+rect(0.3, 0.25, 1.0, 2.70,  border= "grey75", col = "grey95")
 leg.element(y =2.1, label = "Extinct", col = "#5E5E5E")
 leg.element(y =1.4, label = "Endangered", col = col.end)
 leg.element(y = 0.7, label = "Vulnerable", col = col.vul)
