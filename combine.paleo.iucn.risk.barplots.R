@@ -129,15 +129,17 @@ par(oma = c(2.6, 9, 2, 4))
 par(tck = -0.02) # shorten the tick length
 
 dat.scaled$y.pos <- 1:nrow(dat.scaled)
+dat.scaled$y.pos[17:20] <- dat.scaled$y.pos[17:20] + 0.5
+
 ## the fossil panel:
-plot(1, 1, xlim = log(c(0.004, max(dat.scaled$ext.0.75, na.rm = TRUE)* 1.94)), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
+plot(1, 1, xlim = log(c(0.004, max(dat.scaled$ext.0.75, na.rm = TRUE)* 1.94)), ylim = range(dat.scaled$y.pos), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
 bg.plot(colour = "grey97")
 box(bty = "o", col = "grey70")
 par(xpd = FALSE)
-abline(h = 1:nrow(dat.scaled), col = "grey90")
+abline(h = dat.scaled$y.pos, col = "grey90")
 par(xpd = NA)
 par(las = 2)
-axis(2, col = "grey70", at = 1:nrow(dat.scaled), labels = paste(dat.scaled$label, sep = ""), col.axis = "grey45")
+axis(2, col = "grey70", at = dat.scaled$y.pos, labels = paste(dat.scaled$label, sep = ""), col.axis = "grey45")
 
 par(las = 0)
 par(xpd = NA)
@@ -145,14 +147,14 @@ axis.pos <- c(0.004, 0.02, 0.1, 0.5)
 axis(1, col = "grey70", at = log(c(0.004, axis.pos)), labels = c(0, axis.pos), col.axis = "grey45", cex.axis = 1)
 # fake the addition of a 0 on the x-axis
 
-with(dat.scaled, segments(log(ext.0.25 + 0.004), 1:nrow(dat.scaled), log(ext.0.75), 1:nrow(dat.scaled), col = "black"))
-with(dat.scaled, points(log(median.ext+ 0.004), 1:nrow(dat.scaled), pch = 19, col = "grey30"))
+with(dat.scaled, segments(log(ext.0.25 + 0.004), y.pos, log(ext.0.75), y.pos, col = "black"))
+with(dat.scaled, points(log(median.ext+ 0.004), y.pos, pch = 19, col = "grey30"))
 
 par(xpd = NA)
 mtext("Median extinction rate", side = 1, line =1.6, cex = 0.7, col = "grey30")
 
 par(las = 2)
-axis(2, at = nrow(dat.scaled) + 1.28, label = "Taxon", lwd = 0, col.axis = "grey30")
+axis(2, at = max(dat.scaled$y.pos) + 1.28, label = "Taxon", lwd = 0, col.axis = "grey30")
 par(las = 0)
 
 # labels at top:
@@ -160,10 +162,10 @@ par(xpd = NA)
 mtext("(a) Fossil", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## the iucn panel:
-plot(1, 1, xlim = c(0, 1.0), ylim = c(1, nrow(dat.scaled)), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
+plot(1, 1, xlim = c(0, 1.0), ylim = range(dat.scaled$y.pos), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
 bg.plot(colour = "grey97")
 par(xpd = FALSE)
-abline(h = 1:nrow(dat.scaled), col = "grey90")
+abline(h = dat.scaled$y.pos, col = "grey90")
 par(xpd = NA)
 #col.end <- paste("#FF0000", round(dat.scaled$n.prop, 2)* 100 - 1, sep = "")
 #col.vul <- as.character(paste("#D0BD00", round(dat.scaled$n.prop, 2)* 100 - 1, sep = ""))
@@ -178,16 +180,20 @@ par(xpd = NA)
 axis(1, col = "grey70", at = seq(0, 1.0, 0.25), labels = seq(0, 1.0, 0.25), col.axis = "grey45")
 
 par(xpd = FALSE)
-with(dat.scaled, rect(rep(0, nrow(dat.scaled)), 1:nrow(dat.scaled)- 0.3, extinct, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = "#5E5E5E"))
+with(dat.scaled, rect(rep(0, nrow(dat.scaled)), y.pos- 0.3, extinct, y.pos + 0.3, border = FALSE, col = "#5E5E5E"))
 
-with(dat.scaled, rect(extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered, 1:nrow(dat.scaled) + 0.3, border = FALSE, col = col.end))
+with(dat.scaled, rect(extinct, y.pos - 0.3, extinct + endangered, y.pos + 0.3, border = FALSE, col = col.end))
 
-with(dat.scaled, rect(endangered + extinct, 1:nrow(dat.scaled)- 0.3, extinct + endangered + vulnerable, 1:nrow(dat.scaled) + 0.3, border = FALSE, col =col.vul))
+with(dat.scaled, rect(endangered + extinct, y.pos- 0.3, extinct + endangered + vulnerable, y.pos + 0.3, border = FALSE, col =col.vul))
 
+box(col = "grey70")
 # add confidence intervals with and without DD
-with(dat.scaled, segments(end.plus.ext.l, 1:nrow(dat.scaled), end.plus.ext.u, 1:nrow(dat.scaled), col = "grey25"))
+#with(dat.scaled, segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = "grey25"))
+with(dat.scaled, segments(end.plus.ext.l, y.pos, endangered+extinct, y.pos, col = "grey90", lwd = 1.8))
+with(dat.scaled, segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = col.end, lwd = 0.9))
 par(xpd = NA)
-with(dat.scaled, points(endangered + extinct, 1:nrow(dat.scaled), col = "grey25", pch = 20, cex = 0.6))
+with(dat.scaled, points(endangered + extinct, y.pos, col = "grey30", pch = 20, cex = 0.7))
+#with(dat.scaled, points(endangered + extinct, y.pos, col = col.end, pch = 20, cex = 0.6))
 par(xpd = FALSE)
 
 par(xpd = NA)
@@ -196,8 +202,8 @@ mtext("Fraction of species", side = 1, line =1.6, cex = 0.7, col = "grey30")
 
 ## iucn numbers on the right
 par(las = 1)
-axis(4, col = "grey70", at = 1:nrow(dat.scaled), labels = paste(dat.scaled$n, dat.scaled$dd.high, sep = ""), col.axis = "grey45")
-axis(4, at = nrow(dat.scaled) + 1.4, label = "Species\nassessed", lwd = 0, col.axis = "grey30")
+axis(4, col = "grey70", at = dat.scaled$y.pos, labels = paste(dat.scaled$n, dat.scaled$dd.high, sep = ""), col.axis = "grey45")
+axis(4, at = max(dat.scaled$y.pos) + 1.4, label = "Species\nassessed", lwd = 0, col.axis = "grey30")
 
 # labels at top:
 par(xpd = NA)
@@ -209,10 +215,15 @@ leg.element <- function(x = 0.35, y , label, col) {
   text(x + 0.03, y, label, pos = 4, col = "grey35", cex = 0.8)
 }
 
-rect(0.3, 0.25, 1.0, 2.70,  border= "grey75", col = "grey95")
+rect(0.3, 0.225, 1.0, 2.70,  border= "grey75", col = "grey95")
 leg.element(y =2.1, label = "Extinct", col = "#5E5E5E")
 leg.element(y =1.4, label = "Endangered", col = col.end)
 leg.element(y = 0.7, label = "Vulnerable", col = col.vul)
+
+par(xpd = NA)
+segments(-1, 16.75, 1, 16.75, col = "white", lwd = 3)
+segments(-1, 16.65, 1, 16.65, col = "grey80", lwd = 1)
+segments(-1, 16.85, 1, 16.85, col = "grey80", lwd = 1)
 
 dev.off()
 
