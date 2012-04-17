@@ -1,7 +1,7 @@
 # ====================================================================
 # Created by:    Sean Anderson, sean@seananderson.ca
 # Created:       Jul 07, 2011
-# Last modified: Jan 29, 2012
+# Last modified: Apr 17, 2012
 # Purpose:       combine paleo and iucn rates/risk and plot them for
 # fig 2 of the review paper
 # ====================================================================
@@ -88,7 +88,17 @@ pbdb.rates$label <- pbdb.rates$Class
 
 dat.scaled <- merge(dat.scaled, pbdb.rates, all = TRUE)
 
-###
+##
+## bring in historical data:
+source("historical.R")
+dat.scaled <- merge(dat.scaled, global_table, all = TRUE)
+dat.scaled <- merge(dat.scaled, local_table, all = TRUE)
+dat.scaled$local_extinctions[is.na(dat.scaled$local_extinctions)] <- 0
+dat.scaled$global_extinctions[is.na(dat.scaled$global_extinctions)] <- 0
+dat.scaled$extinct[is.na(dat.scaled$extinct)] <- 0
+dat.scaled$endangered[is.na(dat.scaled$endangered)] <- 0
+dat.scaled$vulnerable[is.na(dat.scaled$vulnerable)] <- 0
+dat.scaled$dd[is.na(dat.scaled$dd)] <- 0
 
 # * for those that are highly data deficient:
 dat.scaled <- adply(dat.scaled, 1, summarize, dd.high = ifelse(dd > 0.5 & !is.na(dd), "*", ""))
@@ -96,6 +106,10 @@ dat.scaled <- adply(dat.scaled, 1, summarize, dd.high = ifelse(dd > 0.5 & !is.na
 # order the data:
 dat.scaled <- dat.scaled[order(dat.scaled$kingdom, dat.scaled$endangered.plus.extinct), ]
 dat.scaled <- rbind(subset(dat.scaled, label %in% c("Brachiopoda", "Bryozoa")), subset(dat.scaled, !label %in% c("Brachiopoda", "Bryozoa")))
+#dat.scaled <- rbind(subset(dat.scaled, label %in% c("Carnivora", "Bryozoa")), subset(dat.scaled, !label %in% c("Brachiopoda", "Bryozoa")))
+
+
+
 
 library(RColorBrewer)
 pal = brewer.pal(3, "Set1")
@@ -120,8 +134,8 @@ dat.scaled[4, ] <- biv.temp
 dat.scaled[3, ] <- echin.temp
 
 
-pdf("iucn-paleo-rates-bar-jan28-DD.pdf", width = 4.15, height = 3.7)
-par(mfrow = c(1, 2))
+pdf("fig2_apr17.pdf", width = 4.90, height = 4.0)
+par(mfrow = c(1, 3))
 par(mar = c(0,0,0,0))
 par(cex = 0.7)
 par(mgp = c(2, 0.40, 0)) # title and axis label distances - make them closer
@@ -129,7 +143,7 @@ par(oma = c(2.6, 9, 2, 4))
 par(tck = -0.02) # shorten the tick length
 
 dat.scaled$y.pos <- 1:nrow(dat.scaled)
-dat.scaled$y.pos[17:20] <- dat.scaled$y.pos[17:20] + 0.5
+dat.scaled$y.pos[20:24] <- dat.scaled$y.pos[20:24] + 0.5
 
 ## the fossil panel:
 plot(1, 1, xlim = log(c(0.004, max(dat.scaled$ext.0.75, na.rm = TRUE)* 1.94)), ylim = range(dat.scaled$y.pos), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
@@ -160,6 +174,34 @@ par(las = 0)
 # labels at top:
 par(xpd = NA)
 mtext("(a) Fossil", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+
+## the historical panel:
+plot(1, 1, xlim = c(0, 38), ylim = range(dat.scaled$y.pos), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
+bg.plot(colour = "grey97")
+box(bty = "o", col = "grey70")
+par(xpd = FALSE)
+abline(h = dat.scaled$y.pos, col = "grey90")
+par(xpd = NA)
+par(las = 2)
+#axis(2, col = "grey70", at = 1:nrow(dat.scaled), labels = paste(dat.scaled$label, sep = ""), col.axis = "grey35")
+
+par(las = 0)
+par(xpd = NA)
+axis.pos <- c(10, 20, 30)
+axis(1, col = "grey70", at = axis.pos, labels = axis.pos, col.axis = "grey35", cex.axis = 1)
+
+# the actual data plotting:
+with(dat.scaled, rect(0, y.pos- 0.3, global_extinctions, y.pos + 0.3, border = FALSE, col = "grey20"))
+with(dat.scaled, rect(global_extinctions, y.pos- 0.3, global_extinctions + local_extinctions, y.pos + 0.3, border = FALSE, col = "grey60"))
+
+par(xpd = NA)
+mtext("Historical extinctions", side = 1, line =2.5, cex = 0.7, col = "grey30")
+
+# labels at top:
+par(xpd = NA)
+mtext("(b) Historical", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+
+
 
 ## the iucn panel:
 plot(1, 1, xlim = c(0, 1.0), ylim = range(dat.scaled$y.pos), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
@@ -207,7 +249,7 @@ axis(4, at = max(dat.scaled$y.pos) + 1.4, label = "Species\nassessed", lwd = 0, 
 
 # labels at top:
 par(xpd = NA)
-mtext("(b) Modern", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+mtext("(c) Modern", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## legend:
 leg.element <- function(x = 0.35, y , label, col) {
@@ -220,10 +262,11 @@ leg.element(y =2.1, label = "Extinct", col = "#5E5E5E")
 leg.element(y =1.4, label = "Endangered", col = col.end)
 leg.element(y = 0.7, label = "Vulnerable", col = col.vul)
 
+### The white splitting line:
 par(xpd = NA)
-segments(-1, 16.75, 1, 16.75, col = "white", lwd = 3)
-segments(-1, 16.65, 1, 16.65, col = "grey80", lwd = 1)
-segments(-1, 16.85, 1, 16.85, col = "grey80", lwd = 1)
+segments(-2, 19.75, 1, 19.75, col = "white", lwd = 3)
+segments(-2, 19.65, 1, 19.65, col = "grey80", lwd = 1)
+segments(-2, 19.85, 1, 19.85, col = "grey80", lwd = 1)
 
 dev.off()
 
