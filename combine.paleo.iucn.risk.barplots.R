@@ -1,7 +1,7 @@
 # ====================================================================
 # Created by:    Sean Anderson, sean@seananderson.ca
 # Created:       Jul 07, 2011
-# Last modified: Jan 28, 2012
+# Last modified: Jan 29, 2012
 # Purpose:       combine paleo and iucn rates/risk and plot them for
 # fig 2 of the review paper
 # ====================================================================
@@ -189,8 +189,8 @@ with(dat.scaled, rect(endangered + extinct, y.pos- 0.3, extinct + endangered + v
 box(col = "grey70")
 # add confidence intervals with and without DD
 #with(dat.scaled, segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = "grey25"))
-with(dat.scaled, segments(end.plus.ext.l, y.pos, endangered+extinct, y.pos, col = "grey90", lwd = 1.8))
-with(dat.scaled, segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = col.end, lwd = 0.9))
+#with(dat.scaled, segments(end.plus.ext.l, y.pos, endangered+extinct, y.pos, col = "grey90", lwd = 1.8))
+with(dat.scaled, segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = "grey25", lwd = 0.9))
 par(xpd = NA)
 with(dat.scaled, points(endangered + extinct, y.pos, col = "grey30", pch = 20, cex = 0.7))
 #with(dat.scaled, points(endangered + extinct, y.pos, col = col.end, pch = 20, cex = 0.6))
