@@ -44,6 +44,9 @@ data.frame(
       #grouping = unique(x$grouping)
 )})
 
+# these are now in the historical data:
+iucn.summary$extinct <- 0
+
 #### begin substitute sea bird data:
 # substitute in the bird data from BirdLife international:
 aves<-read.table("Seabirds2011.dat", sep = "\t", header = TRUE, stringsAsFactors = FALSE, comment.char = "#", col.names = c("SciName", "ComName", "IUCNCat", "spID"))
@@ -99,6 +102,11 @@ dat.scaled <- merge(dat.scaled, pbdb.rates, all = TRUE)
 ##
 ## bring in historical data:
 source("historical.R")
+# add Omphalotropis plicosa a globally extinct gastropod from IUCN:
+global_table[global_table$label == "Gasteropoda", "global_extinctions"] <- global_table[global_table$label == "Gasteropoda", "global_extinctions"] + 1
+# add Prototroctes oxyrhynchus a globally extinct fish:
+global_table[global_table$label == "Osteichthyes", "global_extinctions"] <- global_table[global_table$label == "Osteichthyes", "global_extinctions"] + 1
+
 dat.scaled <- merge(dat.scaled, global_table, all = TRUE)
 dat.scaled <- merge(dat.scaled, local_table, all = TRUE)
 dat.scaled$local_extinctions[is.na(dat.scaled$local_extinctions)] <- 0
@@ -272,13 +280,12 @@ with(dat.scaled, rect(extinct, y.pos - 0.3, extinct + endangered, y.pos + 0.3, b
 
 with(dat.scaled, rect(endangered + extinct, y.pos- 0.3, extinct + endangered + vulnerable, y.pos + 0.3, border = FALSE, col =col.vul))
 
-box(col = "grey70")
+## iucn numbers on the right
+
+#box(col = "grey70")
 # add confidence intervals with and without DD
 #with(dat.scaled, segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = "grey25"))
 #with(dat.scaled, segments(end.plus.ext.l, y.pos, endangered+extinct, y.pos, col = "grey90", lwd = 1.8))
-with(subset(dat.scaled, endangered.plus.vulnerable != 0 & !is.na(endangered.plus.vulnerable)), segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = "grey25", lwd = 0.9))
-par(xpd = NA)
-with(subset(dat.scaled, endangered.plus.vulnerable != 0 & !is.na(endangered.plus.vulnerable)), points(endangered + extinct, y.pos, col = "grey30", pch = 20, cex = 0.7))
 #with(dat.scaled, points(endangered + extinct, y.pos, col = col.end, pch = 20, cex = 0.6))
 par(xpd = FALSE)
 
@@ -286,10 +293,14 @@ par(xpd = NA)
 par(las = 0)
 mtext("Fraction of species", side = 1, line =1.6, cex = 0.7, col = "grey30")
 
-## iucn numbers on the right
 par(las = 1)
 axis(4, col = "grey70", at = dat.scaled$y.pos, labels = paste(dat.scaled$n.with.DD, dat.scaled$dd.high, sep = ""), col.axis = "grey45")
 axis(4, at = max(dat.scaled$y.pos) + 1.4, label = "Species\nassessed", lwd = 0, col.axis = "grey30")
+
+with(subset(dat.scaled, endangered.plus.vulnerable != 0 & !is.na(endangered.plus.vulnerable)), segments(end.plus.ext.l, y.pos, end.plus.ext.u, y.pos, col = "grey25", lwd = 0.9))
+par(xpd = NA)
+with(subset(dat.scaled, endangered.plus.vulnerable != 0 & !is.na(endangered.plus.vulnerable)), points(endangered + extinct, y.pos, col = "grey30", pch = 20, cex = 0.7))
+
 
 # labels at top:
 par(xpd = NA)
@@ -301,8 +312,8 @@ leg.element <- function(x = 0.35, y , label, col) {
   text(x + 0.03, y, label, pos = 4, col = "grey35", cex = 0.8)
 }
 
-rect(0.3, 0.225, 1.0, 2.70,  border= "grey75", col = "grey95")
-leg.element(y =2.1, label = "Extinct", col =col.ext)
+rect(0.3, 0.225, 1.0, 2.00,  border= "grey75", col = "grey95")
+#leg.element(y =2.1, label = "Extinct", col =col.ext)
 leg.element(y =1.4, label = "Endangered", col = col.end)
 leg.element(y = 0.7, label = "Vulnerable", col = col.vul)
 
