@@ -13,9 +13,11 @@ iucn.dat <- read.iucn.dat("data/export-23825-marine-system-species.csv")
 rel <- read.csv("paleo-iucn-relation.csv", stringsAsFactors = FALSE, header = TRUE)
 
 out <- list()
-for(i in 3:nrow(rel)) {
+for(i in 1:nrow(rel)) {
+  if(nrow(subset(iucn.dat, eval(parse(text = rel$iucn.search.string[i])))) > 0) {
   out[[i]] <- subset(iucn.dat, eval(parse(text = rel$iucn.search.string[i])))
   out[[i]]$label <- rel[i,]$id
+  }
   #out[[i]]$grouping <- rel[i,]$grouping
 }
 out <- do.call("rbind", out)
@@ -73,7 +75,7 @@ dat.scaled <- rbind(dat.scaled[nrow(dat.scaled):(nrow(dat.scaled)-1), ], dat.sca
 
 ### grouping and ordering:
 names(rel)[1] <- "label"
-dat.scaled <- merge(dat.scaled, rel[,c("label","kingdom","grouping")])
+dat.scaled <- merge(dat.scaled, rel[,c("label","kingdom","grouping","plot.order")])
 dat.scaled <- transform(dat.scaled, n.prop = log(n / max(n) + 0.01))
 dat.scaled$n.prop <- dat.scaled$n.prop/3
 dat.scaled$n.prop <- dat.scaled$n.prop - min(dat.scaled$n.prop)
@@ -113,6 +115,9 @@ dat.scaled[dat.scaled$label == "Siphonocladophyceae", "n.with.DD"] <- 0
 dat.scaled[dat.scaled$label == "Bryozoa", "n.with.DD"] <- 0
 dat.scaled[dat.scaled$label == "Brachiopoda", "n.with.DD"] <- 0
 
+dat.scaled <- merge(dat.scaled, rel[,c("label","plot.order")], all.x = TRUE)
+dat.scaled[dat.scaled$label == "Siphonocladophyceae", "plot.order"] <- 3
+
 # * for those that are highly data deficient:
 dat.scaled <- adply(dat.scaled, 1, summarize, dd.high = ifelse(dd > 0.5 & !is.na(dd), "*", ""))
 
@@ -124,7 +129,9 @@ dat.scaled <- transform(dat.scaled, grouping = reorder(grouping, grouping.order)
 dat.scaled$endangered.plus.extinct.fake <- dat.scaled$endangered.plus.extinct
 dat.scaled[is.na(dat.scaled$endangered.plus.extinct.fake), "endangered.plus.extinct.fake"] <- -99
 dat.scaled[dat.scaled$label == "Echinoidea", "endangered.plus.extinct.fake"] <- -98
-dat.scaled <- dat.scaled[order(dat.scaled$grouping, dat.scaled$endangered.plus.extinct.fake), ]
+#dat.scaled <- dat.scaled[order(dat.scaled$grouping, dat.scaled$endangered.plus.extinct.fake), ]
+# or by hand:
+dat.scaled <- dat.scaled[order(dat.scaled$grouping, -dat.scaled$plot.order), ]
 
 
 #dat.scaled <- rbind(subset(dat.scaled, label %in% c("Brachiopoda", "Bryozoa")), subset(dat.scaled, !label %in% c("Brachiopoda", "Bryozoa")))
@@ -195,7 +202,9 @@ par(las = 0)
 
 # labels at top:
 par(xpd = NA)
-mtext("(a) Fossil", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+#mtext("(a) Fossil", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+mtext(expression(paste(bold("(a)"), " Fossil")), side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+
 
 ## the historical panel:
 plot(1, 1, xlim = c(0, 38), ylim = range(dat.scaled$y.pos), type = "n", axes = F, xlab = "", ylab = "", xaxs = "i")
@@ -221,7 +230,9 @@ mtext("Extinctions", side = 1, line =1.6, cex = 0.7, col = "grey30")
 
 # labels at top:
 par(xpd = NA)
-mtext("(b) Historical", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+#mtext("(b) Historical", side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+mtext(expression(paste(bold("(b)"), " Historical")), side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+
 
 
 ## legend:
@@ -282,7 +293,7 @@ axis(4, at = max(dat.scaled$y.pos) + 1.4, label = "Species\nassessed", lwd = 0, 
 
 # labels at top:
 par(xpd = NA)
-mtext(expression(paste(bold("(c)"), "Modern")), side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
+mtext(expression(paste(bold("(c)"), " Modern")), side = 3, line = 0.1, cex = 0.7, adj = 0.05, col = "grey30")
 
 ## legend:
 leg.element <- function(x = 0.35, y , label, col) {
